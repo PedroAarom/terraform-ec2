@@ -15,7 +15,7 @@ resource "aws_instance" "web" {
   vpc_security_group_ids = [aws_security_group.web_sg.id]
  
   provisioner "file" {
-    source      = var.provisioner_file_source
+    source      = "./modules/compute/${var.provisioner_file_source}"
     destination = "/tmp/install_apache.sh"
   }
  
@@ -29,7 +29,7 @@ resource "aws_instance" "web" {
   connection {
     type        = var.connection_type
     user        = var.connection_user
-    private_key = file(var.connection_private_key)  # Ruta a tu clave privada
+    private_key = file("./modules/compute/${var.connection_private_key}")  # Ruta a tu clave privada
     host        = self.public_ip
   }
 }

@@ -6,8 +6,8 @@ module "compute" {
     key_name = "vockey"
     connection_type = "ssh"
     connection_user = "ec2-user"
-    connection_private_key = "./modules/compute/ssh.pem"
-    provisioner_file_source = "./modules/compute/install_apache.sh"
+    connection_private_key = "ssh.pem"
+    provisioner_file_source = "install_apache.sh"
 }
 
 output "ec2_instance_id" {
