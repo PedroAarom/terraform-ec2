@@ -1,44 +1,10 @@
-provider "aws" {
-  region = var.aws_region  # Cambia esto a tu región preferida
-}
+resource "aws_security_group" "allow_tls" {
 
-resource "aws_instance" "web" {
-  ami           = var.ami  # AMI de Amazon Linux 2
-  instance_type = var.instance_type
-  key_name      = var.key_name  # Cambia esto al nombre de tu par de claves SSH
- 
-  tags = {
-    Name = "WebServer"
-  }
- 
-  # Define el Security Group para permitir tráfico HTTP y SSH
-  vpc_security_group_ids = [aws_security_group.web_sg.id]
- 
-  provisioner "file" {
-    source      = "./modules/compute/${var.provisioner_file_source}"
-    destination = "/tmp/install_apache.sh"
-  }
- 
-  provisioner "remote-exec" {
-    inline = [
-      "chmod +x /tmp/install_apache.sh",
-      "sudo /tmp/install_apache.sh"
-    ]
-  }
- 
-  connection {
-    type        = var.connection_type
-    user        = var.connection_user
-    private_key = file("./modules/compute/${var.connection_private_key}")  # Ruta a tu clave privada
-    host        = self.public_ip
-  }
-}
+name_prefix = "allow_tls_"
 
-resource "aws_security_group" "web_sg" {
-  name        = "web_sg"
-  description = "Allow HTTP and SSH traffic"
- 
-  ingress {
+vpc_id = var.myvpc
+
+ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -51,12 +17,59 @@ resource "aws_security_group" "web_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
- 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+
+ingress {
+
+description = "TLS from VPC"
+
+from_port = 443
+
+to_port = 443
+
+protocol = "tcp"
+
+cidr_blocks = ["0.0.0.0/0"]
+
 }
 
+egress {
+
+from_port = 0
+
+to_port = 0
+
+protocol = "-1"
+
+cidr_blocks = ["0.0.0.0/0"]
+
+}
+
+}
+
+resource "aws_instance" "app" {
+
+ami = "ami-01b799c439fd5516a" # Amazon Linux 2 AMI
+
+instance_type = var.environment == "prod" ? "t2.medium" : "t2.micro"
+
+subnet_id = element(var.subnet, 0)
+
+key_name = "vockey"
+
+vpc_security_group_ids = [aws_security_group.allow_tls.id]
+
+tags = {
+
+Name = "MyAppInstance"
+
+}
+
+root_block_device {
+
+volume_size = var.environment == "prod" ? 50 : 20
+
+volume_type = "gp2"
+
+}
+
+}

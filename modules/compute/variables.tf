@@ -1,35 +1,16 @@
-variable "aws_region" {
-  description = "The AWS region to deploy in"
-  type        = string
+variable "myvpc" {
+  description = "ID of the VPC"
 }
-
-variable "ami" {
-  description = "AMI ID for the EC2 instance"
-  type        = string
+variable "subnet" {
+  description = "ID of the public subnet"
+  
 }
+variable "environment" {
 
-variable "instance_type" {
-  description = "Instance type for the EC2 instance"
-  type        = string
-}
+description = "The environment to deploy to"
 
-variable "key_name" {
- description = "AWS key_name."
- type        = string   
-}
+type = string
 
-variable "connection_type" {
-    type    = string
-}
+default = "dev"
 
-variable "connection_user" {
-    type    = string
-}
-
-variable "connection_private_key" {
-    type    = string
-}
-
-variable "provisioner_file_source" {
-    type    = string
 }
